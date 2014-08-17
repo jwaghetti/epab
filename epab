@@ -1,0 +1,93 @@
+#!/bin/bash
+
+###########################################################################
+#                       EPAB - EPAB Prepares a Backup                     #
+###########################################################################
+#                                                                         #
+# Copyright 2014 Jean Waghetti.                                           #
+#                                                                         #
+###########################################################################
+#                                                                         #
+# This work is free. You can redistribute it and/or modify it under the   #
+# terms of the Do What The Fuck You Want To Public License, Version 2,    #
+# as published by Sam Hocevar. See http://www.wtfpl.net/ for more details.#
+#                                                                         #
+###########################################################################
+
+Greba_version="0.1"
+Copyright_info="Copyright 2014 Jean Waghetti"
+License_info=\
+"This work is free. You can redistribute it and/or modify it under the\n"\
+"terms of the Do What The Fuck You Want To Public License, Version 2,\n"\
+"as published by Sam Hocevar. See http://www.wtfpl.net/ for more details.\n"
+
+Backup_md5sum_filename="backup.md5"
+Lzma_suffix="lzma"
+
+echo
+echo "EPAB - EPAB Prepares A Backup"
+echo "Version ${version}"
+echo
+echo ${Copyrigh_info}
+echo ${License_info}
+
+backup_directory=$1
+this_directory=`pwd`
+
+echo $this_directory
+echo $backup_directory
+
+if [ -z "$backup_directory" ]
+then
+	backup_directory="$this_directory"
+fi
+
+if [ ! -d "$backup_directory" ]
+then
+	echo "Directory $backup_directory does not exist."
+	exit 1
+fi
+
+cd "$backup_directory"
+
+echo
+echo "Verifying existing md5sums:"
+md5sum -c "$Backup_md5sum_filename"
+echo
+
+files_to_backup=$(find . -type f );
+
+for file in $files_to_backup
+do
+	echo "#######################"
+	echo $file
+
+	if [[ $file == *$Backup_md5sum_filename ]]
+	then
+		continue;	
+	fi
+
+	if [[ $file == *prepare_disk_backup ]]
+	then
+		continue;	
+	fi
+
+	if [[ $file == .*$Lzma_suffix ]]
+	then
+		echo "File $file already compressed."
+		echo
+		continue;
+	fi
+
+	echo "Compressing . . ."
+	lzma $file
+
+	echo "Creating md5sum . . ."
+	md5sum -b "$file.$Lzma_suffix" | tee --append $Backup_md5sum_filename
+
+	echo
+
+done
+
+cd "$this_directory"
+
