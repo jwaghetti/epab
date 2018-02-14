@@ -9,6 +9,8 @@ verified.
 Compression is through lzma and each file is
 compressed separately.
 
+Official Public Repository: https://gitlab.com/jwaghetti/epab
+
 ### Setup
 
 Copy the files that will be processed by EPAB
